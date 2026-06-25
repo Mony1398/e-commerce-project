@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>E-commerce Funnel & Conversion Analytics</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1" integrity="sha384-jb8JQMbMoBUzgWatfe6COACi2ljcDdZQ2OxczGA3bGNeWe+6DChMTBJemed7ZnvJ" crossorigin="anonymous"></script>
+<style>
+:root{
+  --bg-primary:#f7f8fa; --bg-card:#ffffff; --bg-header:#13203a;
+  --text-primary:#1c2230; --text-secondary:#6b7280; --text-on-dark:#ffffff;
+  --color-1:#3b6fd4; --color-2:#e8833f; --color-3:#2fa86a; --color-4:#c4434f; --color-5:#8a6fc4;
+  --positive:#1f9d55; --negative:#d64550; --neutral:#6b7280;
+  --gap:16px; --radius:10px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg-primary);color:var(--text-primary);line-height:1.5;}
+.dashboard-container{max-width:1380px;margin:0 auto;padding:var(--gap);}
+.dashboard-header{background:var(--bg-header);color:var(--text-on-dark);padding:22px 26px;border-radius:var(--radius);margin-bottom:var(--gap);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;}
+.dashboard-header h1{font-size:20px;font-weight:700;}
+.dashboard-header p{font-size:13px;color:rgba(255,255,255,0.65);margin-top:4px;}
+.filters{display:flex;gap:12px;align-items:center;flex-wrap:wrap;}
+.filter-group{display:flex;align-items:center;gap:6px;}
+.filter-group label{font-size:12px;color:rgba(255,255,255,0.7);}
+.filter-group select{padding:7px 10px;border:1px solid rgba(255,255,255,0.25);border-radius:6px;background:rgba(255,255,255,0.1);color:var(--text-on-dark);font-size:13px;}
+.filter-group select option{background:var(--bg-header);color:var(--text-on-dark);}
+.banner{background:#fff7e6;border:1px solid #f0d999;color:#7a5b00;font-size:12.5px;padding:9px 16px;border-radius:8px;margin-bottom:var(--gap);}
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:var(--gap);margin-bottom:var(--gap);}
+.kpi-card{background:var(--bg-card);border-radius:var(--radius);padding:18px 22px;box-shadow:0 1px 3px rgba(0,0,0,0.07);}
+.kpi-label{font-size:12px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;}
+.kpi-value{font-size:25px;font-weight:700;color:var(--text-primary);margin-bottom:4px;}
+.kpi-note{font-size:12px;color:var(--text-secondary);}
+.section-title{font-size:14px;font-weight:700;color:var(--text-primary);margin:22px 0 10px 2px;}
+.chart-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(420px,1fr));gap:var(--gap);margin-bottom:var(--gap);}
+.chart-container{background:var(--bg-card);border-radius:var(--radius);padding:20px 22px;box-shadow:0 1px 3px rgba(0,0,0,0.07);}
+.chart-container h3{font-size:14px;font-weight:600;color:var(--text-primary);margin-bottom:4px;}
+.chart-container .sub{font-size:12px;color:var(--text-secondary);margin-bottom:14px;}
+.chart-container canvas{max-height:300px;}
+.ab-box{display:flex;gap:18px;flex-wrap:wrap;margin-top:8px;}
+.ab-stat{flex:1;min-width:140px;background:#f7f8fa;border-radius:8px;padding:12px 14px;}
+.ab-stat .l{font-size:11px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.4px;}
+.ab-stat .v{font-size:20px;font-weight:700;margin-top:2px;}
+.ab-verdict{margin-top:14px;padding:12px 14px;border-radius:8px;font-size:13px;}
+.ab-verdict.win{background:#e7f7ee;color:#13753a;border:1px solid #b8e6c9;}
+.table-section{background:var(--bg-card);border-radius:var(--radius);padding:20px 22px;box-shadow:0 1px 3px rgba(0,0,0,0.07);overflow-x:auto;}
+.data-table{width:100%;border-collapse:collapse;font-size:13px;}
+.data-table thead th{text-align:left;padding:10px 12px;border-bottom:2px solid #e2e5ea;color:var(--text-secondary);font-weight:600;font-size:11.5px;text-transform:uppercase;letter-spacing:0.4px;white-space:nowrap;}
+.data-table tbody td{padding:10px 12px;border-bottom:1px solid #f0f1f3;}
+.data-table tbody tr.highlight{background:#eef3fc;}
+.dashboard-footer{font-size:12px;color:var(--text-secondary);text-align:center;padding:16px 4px 4px;}
+@media (max-width:768px){
+  .dashboard-header{flex-direction:column;align-items:flex-start;}
+  .kpi-row{grid-template-columns:repeat(2,1fr);}
+  .chart-row{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+<div class="dashboard-container">
+
+  <header class="dashboard-header">
+    <div>
+      <h1>E-commerce Marketing Funnel & Conversion Analytics</h1>
+      <p>Paid traffic → funnel → conversion · 90-day sample dataset · Mar–May 2026</p>
+    </div>
+    <div class="filters">
+      <div class="filter-group">
+        <label>Channel</label>
+        <select id="channelFilter">
+          <option value="all">All Channels</option>
+        </select>
+      </div>
+    </div>
+  </header>
+
+  <div class="banner">⚠ Sample dataset for demonstration purposes — built with a synthetic 90-day dataset modeling realistic paid traffic, funnel, and revenue patterns across 4 channels. Methodology and SQL logic transfer directly to live Shopify / GA data.</div>
+
+  <section class="kpi-row">
+    <div class="kpi-card"><div class="kpi-label">Revenue</div><div class="kpi-value" id="kpi-revenue">$0</div><div class="kpi-note" id="kpi-revenue-note"></div></div>
+    <div class="kpi-card"><div class="kpi-label">CTR</div><div class="kpi-value" id="kpi-ctr">0%</div><div class="kpi-note">Clicks ÷ Impressions</div></div>
+    <div class="kpi-card"><div class="kpi-label">CVR</div><div class="kpi-value" id="kpi-cvr">0%</div><div class="kpi-note">Purchases ÷ Sessions</div></div>
+    <div class="kpi-card"><div class="kpi-label">AOV</div><div class="kpi-value" id="kpi-aov">$0</div><div class="kpi-note">Revenue ÷ Purchases</div></div>
+    <div class="kpi-card"><div class="kpi-label">ROAS</div><div class="kpi-value" id="kpi-roas">0x</div><div class="kpi-note" id="kpi-roas-note">Revenue ÷ Ad Spend</div></div>
+  </section>
+
+  <div class="section-title">Where are we losing customers in the funnel?</div>
+  <section class="chart-row">
+    <div class="chart-container">
+      <h3 id="funnel-title">Conversion Funnel — All Channels</h3>
+      <div class="sub">Biggest leak: <b id="funnel-leak-label"></b></div>
+      <canvas id="funnelChart"></canvas>
+    </div>
+    <div class="chart-container">
+      <h3>Weekly CVR & ROAS Trend</h3>
+      <div class="sub">All channels combined, weekly rollup</div>
+      <canvas id="trendChart"></canvas>
+    </div>
+  </section>
+
+  <div class="section-title">Which channels actually drive efficient revenue?</div>
+  <section class="chart-row">
+    <div class="chart-container">
+      <h3>CVR & ROAS by Channel</h3>
+      <div class="sub">ROAS not applicable for Organic/SEO (no ad spend)</div>
+      <canvas id="channelChart"></canvas>
+    </div>
+    <div class="chart-container">
+      <h3>A/B Test — Checkout Redesign</h3>
+      <div class="sub" id="ab-sub"></div>
+      <canvas id="abChart" style="max-height:180px;"></canvas>
+      <div class="ab-box">
+        <div class="ab-stat"><div class="l">Control CVR</div><div class="v" id="ab-control"></div></div>
+        <div class="ab-stat"><div class="l">Variant CVR</div><div class="v" id="ab-variant"></div></div>
+        <div class="ab-stat"><div class="l">Lift</div><div class="v" id="ab-lift"></div></div>
+        <div class="ab-stat"><div class="l">p-value</div><div class="v" id="ab-pvalue"></div></div>
+      </div>
+      <div class="ab-verdict win" id="ab-verdict"></div>
+    </div>
+  </section>
+
+  <div class="section-title">Channel breakdown</div>
+  <section class="table-section">
+    <table class="data-table">
+      <thead><tr>
+        <th>Channel</th><th>Sessions</th><th>Purchases</th><th>CVR</th><th>AOV</th><th>ROAS</th><th>Revenue</th><th>Ad Spend</th>
+      </tr></thead>
+      <tbody id="channelTableBody"></tbody>
+    </table>
+  </section>
+
+  <footer class="dashboard-footer">
+    Data as of: May 31, 2026 (90-day sample, synthetic) &nbsp;·&nbsp; Built by Linh Phuong Hoang Nguyen &nbsp;·&nbsp; AI-assisted workflow: Gemini (research) + ChatGPT (cross-check) + Claude (statistical analysis &amp; build)
+  </footer>
+
+</div>
+
+<script>
+const DATA = {
+  "overall": {
+    "ctr": 3.2231767775201354,
+    "cvr": 2.9365180942629507,
+    "aov": 53.273396894579136,
+    "roas": 3.9792749403312153,
+    "revenue": 195566.64,
+    "spend": 49146.3,
+    "sessions": 125012,
+    "purchases": 3671
+  },
+  "funnel": [
+    {
+      "stage": "Sessions",
+      "value": 125012
+    },
+    {
+      "stage": "Add to Cart",
+      "value": 40013,
+      "drop_pct": 68.0
+    },
+    {
+      "stage": "Checkout Started",
+      "value": 21863,
+      "drop_pct": 45.4
+    },
+    {
+      "stage": "Purchase",
+      "value": 3671,
+      "drop_pct": 83.2
+    }
+  ],
+  "channels": [
+    {
+      "channel": "Email",
+      "impressions": 570844,
+      "clicks": 31854,
+      "sessions": 29337,
+      "add_to_cart": 9412,
+      "checkout_started": 5165,
+      "purchases": 1267,
+      "revenue": 61761.56,
+      "ad_spend": 1592.7,
+      "ctr": 5.58,
+      "cvr": 4.32,
+      "aov": 48.75,
+      "roas": 38.78
+    },
+    {
+      "channel": "Facebook Ads",
+      "impressions": 1686999,
+      "clicks": 30716,
+      "sessions": 28177,
+      "add_to_cart": 8900,
+      "checkout_started": 4832,
+      "purchases": 584,
+      "revenue": 30432.57,
+      "ad_spend": 13822.2,
+      "ctr": 1.82,
+      "cvr": 2.07,
+      "aov": 52.11,
+      "roas": 2.2
+    },
+    {
+      "channel": "Google Ads",
+      "impressions": 1123150,
+      "clicks": 39684,
+      "sessions": 36630,
+      "add_to_cart": 11887,
+      "checkout_started": 6463,
+      "purchases": 1060,
+      "revenue": 61440.82,
+      "ad_spend": 33731.4,
+      "ctr": 3.53,
+      "cvr": 2.89,
+      "aov": 57.96,
+      "roas": 1.82
+    },
+    {
+      "channel": "Organic/SEO",
+      "impressions": 837609,
+      "clicks": 33719,
+      "sessions": 30868,
+      "add_to_cart": 9814,
+      "checkout_started": 5403,
+      "purchases": 760,
+      "revenue": 41931.69,
+      "ad_spend": 0.0,
+      "ctr": 4.03,
+      "cvr": 2.46,
+      "aov": 55.17,
+      "roas": NaN
+    }
+  ],
+  "weekly": [
+    {
+      "week": "Mar 01",
+      "cvr": 2.78,
+      "roas": 3.56,
+      "revenue": 2161.07,
+      "sessions": 1475
+    },
+    {
+      "week": "Mar 08",
+      "cvr": 2.86,
+      "roas": 4.01,
+      "revenue": 15411.23,
+      "sessions": 9959
+    },
+    {
+      "week": "Mar 15",
+      "cvr": 2.89,
+      "roas": 3.84,
+      "revenue": 15164.65,
+      "sessions": 9959
+    },
+    {
+      "week": "Mar 22",
+      "cvr": 2.92,
+      "roas": 3.82,
+      "revenue": 14824.72,
+      "sessions": 9536
+    },
+    {
+      "week": "Mar 29",
+      "cvr": 3.02,
+      "roas": 4.24,
+      "revenue": 15702.05,
+      "sessions": 9628
+    },
+    {
+      "week": "Apr 05",
+      "cvr": 3.0,
+      "roas": 4.05,
+      "revenue": 15474.94,
+      "sessions": 9708
+    },
+    {
+      "week": "Apr 12",
+      "cvr": 3.0,
+      "roas": 3.92,
+      "revenue": 14801.36,
+      "sessions": 9377
+    },
+    {
+      "week": "Apr 19",
+      "cvr": 2.98,
+      "roas": 3.99,
+      "revenue": 15025.71,
+      "sessions": 9702
+    },
+    {
+      "week": "Apr 26",
+      "cvr": 2.9,
+      "roas": 3.91,
+      "revenue": 15321.54,
+      "sessions": 9771
+    },
+    {
+      "week": "May 03",
+      "cvr": 2.99,
+      "roas": 3.93,
+      "revenue": 15372.43,
+      "sessions": 9931
+    },
+    {
+      "week": "May 10",
+      "cvr": 2.83,
+      "roas": 3.87,
+      "revenue": 15278.73,
+      "sessions": 9897
+    },
+    {
+      "week": "May 17",
+      "cvr": 2.87,
+      "roas": 3.95,
+      "revenue": 14900.48,
+      "sessions": 9633
+    },
+    {
+      "week": "May 24",
+      "cvr": 2.98,
+      "roas": 4.24,
+      "revenue": 15860.05,
+      "sessions": 9983
+    },
+    {
+      "week": "May 31",
+      "cvr": 3.01,
+      "roas": 4.06,
+      "revenue": 10267.68,
+      "sessions": 6453
+    }
+  ],
+  "ab_test": {
+    "test_name": "Checkout Page Redesign (Single-step vs Multi-step)",
+    "control": {
+      "label": "A - Multi-step checkout (current)",
+      "sessions": 5000,
+      "conversions": 803,
+      "rate": 16.06
+    },
+    "variant": {
+      "label": "B - Single-page checkout (new)",
+      "sessions": 5000,
+      "conversions": 1009,
+      "rate": 20.18
+    },
+    "lift_pct": 25.7,
+    "z_score": 5.35,
+    "p_value": 0.0,
+    "significant": true,
+    "duration_days": 14,
+    "p_value_display": "< 0.0001"
+  }
+};
+
+const COLORS = ['#3b6fd4','#e8833f','#2fa86a','#c4434f','#8a6fc4'];
+
+function fmtMoney(v){
+  if(v>=1e6) return '$'+(v/1e6).toFixed(1)+'M';
+  if(v>=1e3) return '$'+(v/1e3).toFixed(1)+'K';
+  return '$'+v.toFixed(0);
+}
+function fmtNum(v){
+  if(v>=1e6) return (v/1e6).toFixed(1)+'M';
+  if(v>=1e3) return (v/1e3).toFixed(1)+'K';
+  return v.toLocaleString();
+}
+function fmtPct(v){ return v.toFixed(2)+'%'; }
+
+let funnelChart, trendChart, channelChart, abChart;
+
+// populate channel filter
+const sel = document.getElementById('channelFilter');
+DATA.channels.forEach(c=>{
+  const o = document.createElement('option');
+  o.value = c.channel; o.textContent = c.channel;
+  sel.appendChild(o);
+});
+
+function getFunnelFor(channelName){
+  if(channelName==='all') return DATA.funnel;
+  const c = DATA.channels.find(x=>x.channel===channelName);
+  const stages = [
+    {stage:'Sessions', value:c.sessions},
+    {stage:'Add to Cart', value:c.add_to_cart},
+    {stage:'Checkout Started', value:c.checkout_started},
+    {stage:'Purchase', value:c.purchases},
+  ];
+  for(let i=1;i<stages.length;i++){
+    stages[i].drop_pct = +(100*(1-stages[i].value/stages[i-1].value)).toFixed(1);
+  }
+  return stages;
+}
+
+function getKPIsFor(channelName){
+  if(channelName==='all') return DATA.overall;
+  const c = DATA.channels.find(x=>x.channel===channelName);
+  return {
+    ctr: c.ctr, cvr: c.cvr, aov: c.aov, roas: c.roas,
+    revenue: c.revenue, spend: c.ad_spend, sessions: c.sessions, purchases: c.purchases
+  };
+}
+
+function renderKPIs(channelName){
+  const k = getKPIsFor(channelName);
+  document.getElementById('kpi-revenue').textContent = fmtMoney(k.revenue);
+  document.getElementById('kpi-revenue-note').textContent = fmtNum(k.purchases)+' purchases · '+fmtNum(k.sessions)+' sessions';
+  document.getElementById('kpi-ctr').textContent = fmtPct(k.ctr);
+  document.getElementById('kpi-cvr').textContent = fmtPct(k.cvr);
+  document.getElementById('kpi-aov').textContent = fmtMoney(k.aov);
+  document.getElementById('kpi-roas').textContent = (k.roas==null || isNaN(k.roas)) ? 'N/A' : k.roas.toFixed(2)+'x';
+  document.getElementById('kpi-roas-note').textContent = (k.roas==null || isNaN(k.roas)) ? 'No ad spend (organic)' : 'Revenue ÷ Ad Spend';
+}
+
+function renderFunnel(channelName){
+  const stages = getFunnelFor(channelName);
+  document.getElementById('funnel-title').textContent = 'Conversion Funnel — ' + (channelName==='all' ? 'All Channels' : channelName);
+  let worst = stages[1];
+  for(let i=2;i<stages.length;i++){ if(stages[i].drop_pct>worst.drop_pct) worst = stages[i]; }
+  document.getElementById('funnel-leak-label').textContent = worst.stage + ' (' + worst.drop_pct + '% drop-off)';
+
+  const ctx = document.getElementById('funnelChart').getContext('2d');
+  if(funnelChart) funnelChart.destroy();
+  funnelChart = new Chart(ctx, {
+    type:'bar',
+    data:{
+      labels: stages.map(s=>s.stage),
+      datasets:[{
+        label:'Count',
+        data: stages.map(s=>s.value),
+        backgroundColor: stages.map((s,i)=> i===0?COLORS[0]: (s.stage===worst.stage? COLORS[3]: COLORS[0]+'aa')),
+        borderRadius:5
+      }]
+    },
+    options:{
+      indexAxis:'y',
+      responsive:true,
+      plugins:{legend:{display:false}, tooltip:{callbacks:{label:(c)=> fmtNum(c.raw)+' ('+ (stages[c.dataIndex].drop_pct? '-'+stages[c.dataIndex].drop_pct+'% vs prior':'baseline') +')'}}},
+      scales:{x:{ticks:{callback:(v)=>fmtNum(v)}}}
+    }
+  });
+}
+
+function renderTrend(){
+  const ctx = document.getElementById('trendChart').getContext('2d');
+  if(trendChart) trendChart.destroy();
+  trendChart = new Chart(ctx, {
+    type:'line',
+    data:{
+      labels: DATA.weekly.map(w=>w.week),
+      datasets:[
+        {label:'CVR %', data: DATA.weekly.map(w=>w.cvr), borderColor:COLORS[0], backgroundColor:COLORS[0]+'20', yAxisID:'y', tension:0.3, pointRadius:3},
+        {label:'ROAS', data: DATA.weekly.map(w=>w.roas), borderColor:COLORS[1], backgroundColor:COLORS[1]+'20', yAxisID:'y1', tension:0.3, pointRadius:3},
+      ]
+    },
+    options:{
+      responsive:true,
+      interaction:{mode:'index', intersect:false},
+      scales:{
+        y:{type:'linear', position:'left', title:{display:true,text:'CVR %'}},
+        y1:{type:'linear', position:'right', title:{display:true,text:'ROAS'}, grid:{drawOnChartArea:false}}
+      }
+    }
+  });
+}
+
+function renderChannelChart(activeChannel){
+  const ctx = document.getElementById('channelChart').getContext('2d');
+  if(channelChart) channelChart.destroy();
+  channelChart = new Chart(ctx, {
+    type:'bar',
+    data:{
+      labels: DATA.channels.map(c=>c.channel),
+      datasets:[
+        {label:'CVR %', data: DATA.channels.map(c=>c.cvr), backgroundColor: DATA.channels.map(c=> c.channel===activeChannel? COLORS[0]: COLORS[0]+'80'), yAxisID:'y'},
+        {label:'ROAS', data: DATA.channels.map(c=> c.roas==null||isNaN(c.roas)?0:c.roas), backgroundColor: DATA.channels.map(c=> c.channel===activeChannel? COLORS[1]: COLORS[1]+'80'), yAxisID:'y1'},
+      ]
+    },
+    options:{
+      responsive:true,
+      scales:{
+        y:{type:'linear', position:'left', title:{display:true,text:'CVR %'}},
+        y1:{type:'linear', position:'right', title:{display:true,text:'ROAS (x)'}, grid:{drawOnChartArea:false}}
+      }
+    }
+  });
+}
+
+function renderAB(){
+  const ab = DATA.ab_test;
+  document.getElementById('ab-sub').textContent = ab.test_name + ' · ' + ab.duration_days + '-day test';
+  document.getElementById('ab-control').textContent = ab.control.rate+'%';
+  document.getElementById('ab-variant').textContent = ab.variant.rate+'%';
+  document.getElementById('ab-lift').textContent = '+'+ab.lift_pct+'%';
+  document.getElementById('ab-pvalue').textContent = ab.p_value_display;
+  document.getElementById('ab-verdict').textContent = ab.significant
+    ? '✓ Statistically significant (z='+ab.z_score+', p '+ab.p_value_display+'). Recommend shipping the single-page checkout — projected to recover a meaningful share of the Checkout→Purchase drop-off.'
+    : 'Not statistically significant — recommend extending the test.';
+
+  const ctx = document.getElementById('abChart').getContext('2d');
+  if(abChart) abChart.destroy();
+  abChart = new Chart(ctx, {
+    type:'bar',
+    data:{
+      labels:[ab.control.label, ab.variant.label],
+      datasets:[{label:'Conversion Rate %', data:[ab.control.rate, ab.variant.rate], backgroundColor:[COLORS[0]+'90', COLORS[2]]}]
+    },
+    options:{
+      indexAxis:'y',
+      responsive:true,
+      plugins:{legend:{display:false}},
+      scales:{x:{title:{display:true,text:'Conversion Rate (%)'}}}
+    }
+  });
+}
+
+function renderTable(activeChannel){
+  const tbody = document.getElementById('channelTableBody');
+  tbody.innerHTML = '';
+  DATA.channels.forEach(c=>{
+    const tr = document.createElement('tr');
+    if(c.channel===activeChannel) tr.className='highlight';
+    tr.innerHTML = `<td>${c.channel}</td><td>${fmtNum(c.sessions)}</td><td>${fmtNum(c.purchases)}</td>
+      <td>${c.cvr.toFixed(2)}%</td><td>$${c.aov.toFixed(2)}</td>
+      <td>${(c.roas==null||isNaN(c.roas))?'N/A':c.roas.toFixed(2)+'x'}</td>
+      <td>${fmtMoney(c.revenue)}</td><td>${fmtMoney(c.ad_spend)}</td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+function renderAll(channelName){
+  renderKPIs(channelName);
+  renderFunnel(channelName);
+  renderChannelChart(channelName);
+  renderTable(channelName);
+}
+
+sel.addEventListener('change', (e)=> renderAll(e.target.value));
+
+renderAll('all');
+renderTrend();
+renderAB();
+</script>
+</body>
+</html>
