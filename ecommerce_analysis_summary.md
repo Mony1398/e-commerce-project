@@ -20,7 +20,7 @@ Only ~17% of users who start checkout complete the purchase — a far bigger lea
 | Organic/SEO | 2.46% | N/A (no spend) | $41.9K |
 | Facebook Ads | 2.07% | 2.20x | $30.4K |
 
-Google Ads and Facebook Ads generate similar or higher revenue than Email but at far lower ROAS — both drive volume, not efficiency. Email is the standout efficiency channel.
+Google Ads generates comparable revenue to Email ($61.4K vs $61.8K) but at nearly 20x lower ROAS (1.82x vs 38.78x) — it drives volume at high cost. Facebook Ads lags significantly in both revenue ($30.4K) and ROAS (2.20x). Email is the standout efficiency channel; Organic/SEO delivers solid revenue at zero paid cost but its contribution may depend on prior-channel touchpoints not captured here.
 
 **3. A/B test: single-page checkout redesign**
 Simulated 14-day test (5,000 sessions/arm) targeting the checkout drop-off:
@@ -40,7 +40,7 @@ SELECT
   ROUND(SUM(revenue) / NULLIF(SUM(ad_spend), 0), 2) AS roas
 FROM funnel_events
 GROUP BY channel
-ORDER BY roas DESC;
+ORDER BY roas DESC NULLS LAST;
 ```
 Funnel drop-off and the A/B test significance were computed in Python (pandas + scipy two-proportion z-test).
 
@@ -49,7 +49,6 @@ Funnel drop-off and the A/B test significance were computed in Python (pandas + 
 - **ChatGPT** — cross-checked the benchmark figures and formulas (CVR, ROAS, statistical test choice) for accuracy and completeness.
 - **Claude** — built the dataset, ran the statistical analysis (funnel drop-off, channel comparison, two-proportion z-test), and produced the interactive dashboard and this write-up.
 
-This mirrors the role's expectation: use AI daily to analyze faster, automate reporting, and support decisions — not just describe metrics.
 
 ---
 *Dashboard file: `ecommerce_funnel_dashboard.html` (open in any browser, fully interactive, channel filter included).*
