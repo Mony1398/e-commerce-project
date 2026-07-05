@@ -27,4 +27,4 @@ Python (pandas, scipy), SQL, HTML/JavaScript, AI-assisted workflow (Gemini for r
 
 ## How to View
 
-Open `ecommerce_funnel_dashboard.html` directly in a browser, or view via GitHub Pages.
+Open [`ecommerce_funnel_dashboard.html`](https://mony1398.github.io/e-commerce-project/ecommerce_funnel_dashboard.html) directly in a browser, or view via GitHub Pages.
