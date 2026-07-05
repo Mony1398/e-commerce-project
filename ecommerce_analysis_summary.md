@@ -51,4 +51,4 @@ Funnel drop-off and the A/B test significance were computed in Python (pandas + 
 
 
 ---
-*Dashboard file: `ecommerce_funnel_dashboard.html` (open in any browser, fully interactive, channel filter included).*
+*Dashboard file: [`ecommerce_funnel_dashboard.html`](https://mony1398.github.io/e-commerce-project/ecommerce_funnel_dashboard.html) (open in any browser, fully interactive, channel filter included).*
