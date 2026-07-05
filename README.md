@@ -12,7 +12,7 @@ Interactive dashboard analyzing a 90-day synthetic eCommerce dataset across 4 ac
 
 | File | Description |
 |---|---|
-| `ecommerce_funnel_dashboard.html` | Interactive dashboard — KPIs (CTR/CVR/AOV/ROAS), funnel visualization, channel comparison, A/B test results, channel filter |
+| [`ecommerce_funnel_dashboard.html`](https://mony1398.github.io/e-commerce-project/ecommerce_funnel_dashboard.html) | Interactive dashboard — KPIs (CTR/CVR/AOV/ROAS), funnel visualization, channel comparison, A/B test results, channel filter |
 | `ecommerce_analysis_summary.md` | Write-up: methodology, SQL queries, findings, and AI-assisted workflow description |
 
 ## Methodology
